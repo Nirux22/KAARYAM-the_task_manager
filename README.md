@@ -7,8 +7,6 @@ Kaaryam is a simple and efficient web-based task manager designed to help users 
 
 🗒️ Add, edit, and view tasks effortlessly
 
-📱 Responsive design (optional: if you've added it)
-
 💡 Ideal for students, professionals, and anyone who wants to stay organized</br>
 
 
