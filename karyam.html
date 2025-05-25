@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𝐊𝐚𝐚𝐫𝐲𝐚𝐦 - Your Motivational Task Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        
+        .task-completed {
+            position: relative;
+        }
+        
+        .task-completed::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #4ade80;
+            transform: translateY(-50%);
+            animation: strike 0.3s ease-out forwards;
+        }
+        
+        @keyframes strike {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        .priority-high {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .priority-medium {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .priority-low {
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .overdue {
+            background-color: #fee2e2;
+        }
+        
+        .dark .overdue {
+            background-color: #7f1d1d;
+        }
+        
+        .karyam-title {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .quote-container {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        
+        .dark .quote-container {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        
+        .theme-toggle {
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+        
+        .motivational-theme {
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        
+        .dark .motivational-theme {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        
+        .task-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .task-card {
+            background-color: #1e293b;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.25);
+        }
+        
+        .dark .task-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="motivational-theme min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+        <!-- Header with theme toggle -->
+        <header class="mb-8 text-center relative">
+            <div class="absolute right-0 top-0">
+                <button id="themeToggle" class="theme-toggle bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200 p-2 rounded-full">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:inline"></i>
+                </button>
+            </div>
+            <h1 class="karyam-title text-5xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">KARYAM</h1>
+            <p class="text-gray-600 dark:text-gray-300">Your personal motivational task manager</p>
+        </header>
+        
+        <!-- Motivational Quote -->
+        <div id="quoteContainer" class="quote-container rounded-lg shadow-md p-6 mb-8 text-center">
+            <i class="fas fa-quote-left text-2xl opacity-50 mb-2"></i>
+            <p id="motivationalQuote" class="text-lg font-medium italic mb-2">"The way to get started is to quit talking and begin doing."</p>
+            <p id="quoteAuthor" class="text-sm font-semibold">- Walt Disney</p>
+        </div>
+        
+        <!-- Add Task Form -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Add New Task</h2>
+            <form id="taskForm" class="space-y-4">
+                <div>
+                    <label for="taskName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task Name</label>
+                    <input type="text" id="taskName" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white">
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="taskDeadline" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deadline</label>
+                        <input type="datetime-local" id="taskDeadline" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white">
+                    </div>
+                    
+                    <div>
+                        <label for="taskPriority" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
+                        <select id="taskPriority" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition duration-200 flex items-center justify-center">
+                    <i class="fas fa-plus-circle mr-2"></i> Add Task
+                </button>
+            </form>
+        </div>
+        
+        <!-- Tasks List -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Your Tasks</h2>
+                <div class="flex space-x-2">
+                    <button id="filterAll" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200 rounded-md text-sm font-medium">All</button>
+                    <button id="filterActive" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md text-sm font-medium">Active</button>
+                    <button id="filterCompleted" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md text-sm font-medium">Completed</button>
+                </div>
+            </div>
+            
+            <div id="taskList" class="space-y-3">
+                <!-- Tasks will be added here dynamically -->
+                <p id="emptyState" class="text-center py-8 text-gray-500 dark:text-gray-400">No tasks added yet. Start by adding your first task!</p>
+            </div>
+        </div>
+        
+        <!-- Punishment Modal -->
+        <div id="punishmentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+                <div class="text-center mb-4">
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-3"></i>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">Task Not Completed!</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mt-2">You failed to complete your task on time. Here's your punishment:</p>
+                </div>
+                
+                <div id="punishmentTask" class="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-md p-4 mb-4">
+                    <h4 class="font-semibold text-red-700 dark:text-red-300">Punishment Task:</h4>
+                    <p id="punishmentText" class="text-red-600 dark:text-red-200 mt-1"></p>
+                </div>
+                
+                <div class="flex justify-center">
+                    <button id="acceptPunishment" class="bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-md transition duration-200">
+                        I Accept
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const taskForm = document.getElementById('taskForm');
+            const taskName = document.getElementById('taskName');
+            const taskDeadline = document.getElementById('taskDeadline');
+            const taskPriority = document.getElementById('taskPriority');
+            const taskList = document.getElementById('taskList');
+            const emptyState = document.getElementById('emptyState');
+            const filterAll = document.getElementById('filterAll');
+            const filterActive = document.getElementById('filterActive');
+            const filterCompleted = document.getElementById('filterCompleted');
+            const punishmentModal = document.getElementById('punishmentModal');
+            const punishmentText = document.getElementById('punishmentText');
+            const acceptPunishment = document.getElementById('acceptPunishment');
+            const themeToggle = document.getElementById('themeToggle');
+            const motivationalQuote = document.getElementById('motivationalQuote');
+            const quoteAuthor = document.getElementById('quoteAuthor');
+            
+            // Motivational quotes by famous people
+            const quotes = [
+                {
+                    quote: "The only way to do great work is to love what you do.",
+                    author: "Steve Jobs"
+                },
+                {
+                    quote: "Success is not final, failure is not fatal: It is the courage to continue that counts.",
+                    author: "Winston Churchill"
+                },
+                {
+                    quote: "Your time is limited, don't waste it living someone else's life.",
+                    author: "Steve Jobs"
+                },
+                {
+                    quote: "The future belongs to those who believe in the beauty of their dreams.",
+                    author: "Eleanor Roosevelt"
+                },
+                {
+                    quote: "Don't watch the clock; do what it does. Keep going.",
+                    author: "Sam Levenson"
+                },
+                {
+                    quote: "The only limit to our realization of tomorrow is our doubts of today.",
+                    author: "Franklin D. Roosevelt"
+                },
+                {
+                    quote: "You are never too old to set another goal or to dream a new dream.",
+                    author: "C.S. Lewis"
+                },
+                {
+                    quote: "The secret of getting ahead is getting started.",
+                    author: "Mark Twain"
+                },
+                {
+                    quote: "It does not matter how slowly you go as long as you do not stop.",
+                    author: "Confucius"
+                },
+                {
+                    quote: "Believe you can and you're halfway there.",
+                    author: "Theodore Roosevelt"
+                },
+                {
+                    quote: "The way to get started is to quit talking and begin doing.",
+                    author: "Walt Disney"
+                },
+                {
+                    quote: "You don't have to be great to start, but you have to start to be great.",
+                    author: "Zig Ziglar"
+                }
+            ];
+            
+            // Set default deadline to today at 6 PM
+            const today = new Date();
+            today.setHours(18, 0, 0, 0);
+            const formattedDate = today.toISOString().slice(0, 16);
+            taskDeadline.value = formattedDate;
+            
+            // Tasks array
+            let tasks = JSON.parse(localStorage.getItem('karyam-tasks')) || [];
+            
+            // Punishment tasks
+            const punishmentTasks = [
+                "Do 50 push-ups right now",
+                "Read 10 pages of a book you've been avoiding",
+                "Clean your workspace thoroughly",
+                "Write 500 words about why you failed to complete the task",
+                "Go for a 30-minute run immediately",
+                "Meditate for 15 minutes without distractions",
+                "Donate $5 to a charity of your choice",
+                "Learn and memorize 10 new vocabulary words",
+                "No social media for the rest of the day",
+                "Cook a healthy meal instead of ordering takeout"
+            ];
+            
+            // Initialize the app
+            updateQuote();
+            renderTasks();
+            checkOverdueTasks();
+            
+            // Event Listeners
+            taskForm.addEventListener('submit', addTask);
+            filterAll.addEventListener('click', () => filterTasks('all'));
+            filterActive.addEventListener('click', () => filterTasks('active'));
+            filterCompleted.addEventListener('click', () => filterTasks('completed'));
+            acceptPunishment.addEventListener('click', closePunishmentModal);
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // Add a new task
+            function addTask(e) {
+                e.preventDefault();
+                
+                const name = taskName.value.trim();
+                const deadline = new Date(taskDeadline.value);
+                const priority = taskPriority.value;
+                const id = Date.now();
+                
+                if (!name) {
+                    shakeInput(taskName);
+                    return;
+                }
+                
+                const newTask = {
+                    id,
+                    name,
+                    deadline,
+                    priority,
+                    completed: false,
+                    createdAt: new Date()
+                };
+                
+                tasks.unshift(newTask);
+                saveTasks();
+                renderTasks();
+                
+                // Reset form
+                taskForm.reset();
+                taskDeadline.value = formattedDate;
+                taskName.focus();
+            }
+            
+            // Render tasks to the DOM
+            function renderTasks(filter = 'all') {
+                if (tasks.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    taskList.innerHTML = '';
+                    taskList.appendChild(emptyState);
+                    return;
+                }
+                
+                emptyState.classList.add('hidden');
+                taskList.innerHTML = '';
+                
+                let tasksToRender = [...tasks];
+                
+                // Apply filter
+                if (filter === 'active') {
+                    tasksToRender = tasksToRender.filter(task => !task.completed);
+                } else if (filter === 'completed') {
+                    tasksToRender = tasksToRender.filter(task => task.completed);
+                }
+                
+                if (tasksToRender.length === 0) {
+                    const message = document.createElement('p');
+                    message.className = 'text-center py-8 text-gray-500 dark:text-gray-400';
+                    message.textContent = filter === 'active' ? 
+                        'No active tasks. Great job!' : 
+                        'No completed tasks yet. Keep going!';
+                    taskList.appendChild(message);
+                    return;
+                }
+                
+                tasksToRender.forEach(task => {
+                    const taskElement = createTaskElement(task);
+                    taskList.appendChild(taskElement);
+                });
+            }
+            
+            // Create a task element
+            function createTaskElement(task) {
+                const now = new Date();
+                const isOverdue = !task.completed && task.deadline < now;
+                
+                const taskElement = document.createElement('div');
+                taskElement.className = `task-card border rounded-md p-4 flex justify-between items-start ${task.completed ? 'task-completed bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800'} ${isOverdue ? 'overdue' : ''} priority-${task.priority}`;
+                taskElement.dataset.id = task.id;
+                
+                const checkboxId = `task-${task.id}`;
+                
+                const deadlineDate = new Date(task.deadline);
+                const deadlineString = deadlineDate.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                const priorityColors = {
+                    high: 'text-red-500 dark:text-red-400',
+                    medium: 'text-yellow-500 dark:text-yellow-400',
+                    low: 'text-blue-500 dark:text-blue-400'
+                };
+                
+                taskElement.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" id="${checkboxId}" ${task.completed ? 'checked' : ''} class="mt-1 h-5 w-5 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-700">
+                        <div>
+                            <label for="${checkboxId}" class="block text-gray-800 dark:text-gray-200 font-medium ${task.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''}">${task.name}</label>
+                            <div class="flex items-center mt-1 space-x-4 text-sm">
+                                <span class="text-gray-500 dark:text-gray-400"><i class="far fa-clock mr-1"></i> ${deadlineString}</span>
+                                <span class="${priorityColors[task.priority]}"><i class="fas fa-exclamation-circle mr-1"></i> ${task.priority}</span>
+                                ${isOverdue ? '<span class="text-red-500 dark:text-red-400 font-medium"><i class="fas fa-exclamation-triangle mr-1"></i> Overdue</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition duration-200">
+                        <i class="far fa-trash-alt"></i>
+                    </button>
+                `;
+                
+                // Add event listeners to the new elements
+                const checkbox = taskElement.querySelector('input[type="checkbox"]');
+                const deleteBtn = taskElement.querySelector('button');
+                
+                checkbox.addEventListener('change', () => toggleTaskCompletion(task.id));
+                deleteBtn.addEventListener('click', () => deleteTask(task.id));
+                
+                return taskElement;
+            }
+            
+            // Toggle task completion status
+            function toggleTaskCompletion(id) {
+                const taskIndex = tasks.findIndex(task => task.id === id);
+                if (taskIndex !== -1) {
+                    tasks[taskIndex].completed = !tasks[taskIndex].completed;
+                    saveTasks();
+                    renderTasks(getCurrentFilter());
+                }
+            }
+            
+            // Delete a task
+            function deleteTask(id) {
+                const taskIndex = tasks.findIndex(task => task.id === id);
+                if (taskIndex !== -1) {
+                    const task = tasks[taskIndex];
+                    
+                    // Check if task is overdue and not completed
+                    const now = new Date();
+                    if (!task.completed && task.deadline < now) {
+                        showPunishment();
+                    }
+                    
+                    tasks.splice(taskIndex, 1);
+                    saveTasks();
+                    renderTasks(getCurrentFilter());
+                }
+            }
+            
+            // Filter tasks
+            function filterTasks(filter) {
+                // Update active filter button
+                [filterAll, filterActive, filterCompleted].forEach(btn => {
+                    btn.classList.remove('bg-indigo-100', 'dark:bg-indigo-900', 'text-indigo-700', 'dark:text-indigo-200');
+                    btn.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-200');
+                });
+                
+                const activeButton = {
+                    'all': filterAll,
+                    'active': filterActive,
+                    'completed': filterCompleted
+                }[filter];
+                
+                activeButton.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-200');
+                activeButton.classList.add('bg-indigo-100', 'dark:bg-indigo-900', 'text-indigo-700', 'dark:text-indigo-200');
+                
+                renderTasks(filter);
+            }
+            
+            // Get current filter
+            function getCurrentFilter() {
+                if (filterAll.classList.contains('bg-indigo-100')) return 'all';
+                if (filterActive.classList.contains('bg-indigo-100')) return 'active';
+                if (filterCompleted.classList.contains('bg-indigo-100')) return 'completed';
+                return 'all';
+            }
+            
+            // Save tasks to localStorage
+            function saveTasks() {
+                localStorage.setItem('karyam-tasks', JSON.stringify(tasks));
+            }
+            
+            // Check for overdue tasks
+            function checkOverdueTasks() {
+                const now = new Date();
+                tasks.forEach(task => {
+                    if (!task.completed && task.deadline < now) {
+                        // You could add notification logic here
+                    }
+                });
+            }
+            
+            // Show random punishment
+            function showPunishment() {
+                const randomPunishment = punishmentTasks[Math.floor(Math.random() * punishmentTasks.length)];
+                punishmentText.textContent = randomPunishment;
+                punishmentModal.classList.remove('hidden');
+            }
+            
+            // Close punishment modal
+            function closePunishmentModal() {
+                punishmentModal.classList.add('hidden');
+            }
+            
+            // Shake input effect
+            function shakeInput(input) {
+                input.classList.add('shake');
+                setTimeout(() => {
+                    input.classList.remove('shake');
+                }, 500);
+            }
+            
+            // Toggle dark/light theme
+            function toggleTheme() {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('karyam-theme', 'light');
+                    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('karyam-theme', 'dark');
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                }
+            }
+            
+            // Update motivational quote
+            function updateQuote() {
+                // Get a random quote
+                const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                motivationalQuote.textContent = randomQuote.quote;
+                quoteAuthor.textContent = `- ${randomQuote.author}`;
+                
+                // Update quote every 24 hours
+                const lastQuoteUpdate = localStorage.getItem('karyam-quote-update');
+                const now = new Date().getTime();
+                
+                if (!lastQuoteUpdate || (now - lastQuoteUpdate) > 24 * 60 * 60 * 1000) {
+                    localStorage.setItem('karyam-quote-update', now);
+                    localStorage.setItem('karyam-current-quote', JSON.stringify(randomQuote));
+                }
+                
+                // Check for saved theme preference
+                const savedTheme = localStorage.getItem('karyam-theme');
+                if (savedTheme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                }
+                
+                // Check for saved quote
+                const savedQuote = localStorage.getItem('karyam-current-quote');
+                if (savedQuote) {
+                    const parsedQuote = JSON.parse(savedQuote);
+                    motivationalQuote.textContent = parsedQuote.quote;
+                    quoteAuthor.textContent = `- ${parsedQuote.author}`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
